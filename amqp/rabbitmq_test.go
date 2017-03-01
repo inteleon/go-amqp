@@ -1,19 +1,13 @@
 package amqp_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/inteleon/go-amqp/amqp"
+	"github.com/inteleon/go-logging/helper"
 	"github.com/inteleon/go-logging/logging"
 	"reflect"
 	"testing"
 )
-
-type loggingJSONOutput struct {
-	Level string `json:"level"`
-	Msg   string `json:"msg"`
-	Time  string `json:"time"`
-}
 
 type rabbitMQClientConnectSuccessful struct{}
 
@@ -77,58 +71,14 @@ func (d *rabbitMQDialError) Dial() (amqp.AMQPClient, error) {
 	return nil, fmt.Errorf("Dial error")
 }
 
-type stdoutWriterTest struct {
-	Buffer [][]byte
-}
-
-func (s *stdoutWriterTest) Write(p []byte) (count int, err error) {
-	s.Buffer = append(s.Buffer, p)
-
-	return
-}
-
-func logrusLogging() (logging.Logging, *stdoutWriterTest) {
-	w := &stdoutWriterTest{
-		Buffer: [][]byte{},
-	}
-
-	l := logging.NewLogrusLogging()
-	l.SetOutput(w)
-	l.SetLogLevel(logging.DebugLogLevel)
-	l.SetFormatter(logging.JSONFormatter)
-
-	return l, w
-}
-
-func parseLogEntry(entry []byte) (out loggingJSONOutput, err error) {
-	err = json.Unmarshal(entry, &out)
-
-	return
-}
-
 func simpleRabbitMQConfig() *amqp.RabbitMQConfig {
 	return &amqp.RabbitMQConfig{
 		URL: "hax://haxor.yo",
 	}
 }
 
-func validateLogEntry(t *testing.T, entry []byte, logLevel string, expectedMsg string) {
-	j, err := parseLogEntry(entry)
-	if err != nil {
-		t.Fatal("Unexpected error", err)
-	}
-
-	if j.Level != logLevel {
-		t.Fatal("expected", logLevel, "got", j.Level)
-	}
-
-	if j.Msg != expectedMsg {
-		t.Fatal("expected", expectedMsg, "got", j.Msg)
-	}
-}
-
 func TestRabbitMQClientAlreadyConnectedFailure(t *testing.T) {
-	l, w := logrusLogging()
+	l, w := helper.NewTestLogging()
 
 	r := &amqp.RabbitMQ{
 		Log:        l,
@@ -145,7 +95,7 @@ func TestRabbitMQClientAlreadyConnectedFailure(t *testing.T) {
 		t.Fatal("expected", 1, "got", logsLen)
 	}
 
-	validateLogEntry(
+	helper.ValidateLogEntry(
 		t,
 		w.Buffer[0],
 		logging.WarningLogLevel,
@@ -154,7 +104,7 @@ func TestRabbitMQClientAlreadyConnectedFailure(t *testing.T) {
 }
 
 func TestRabbitMQDialDialFailure(t *testing.T) {
-	l, w := logrusLogging()
+	l, w := helper.NewTestLogging()
 
 	cfg := simpleRabbitMQConfig()
 	r := &amqp.RabbitMQ{
@@ -179,14 +129,14 @@ func TestRabbitMQDialDialFailure(t *testing.T) {
 		t.Fatal("expected", 2, "got", logsLen)
 	}
 
-	validateLogEntry(
+	helper.ValidateLogEntry(
 		t,
 		w.Buffer[0],
 		logging.InfoLogLevel,
 		fmt.Sprintf("Connecting to RabbitMQ at %s...", cfg.URL),
 	)
 
-	validateLogEntry(
+	helper.ValidateLogEntry(
 		t,
 		w.Buffer[1],
 		logging.ErrorLogLevel,
@@ -195,7 +145,7 @@ func TestRabbitMQDialDialFailure(t *testing.T) {
 }
 
 func TestRabbitMQClientConnectFailure(t *testing.T) {
-	l, w := logrusLogging()
+	l, w := helper.NewTestLogging()
 
 	var client struct {
 		rabbitMQClientConnectError
@@ -228,14 +178,14 @@ func TestRabbitMQClientConnectFailure(t *testing.T) {
 		t.Fatal("expected", 2, "got", logsLen)
 	}
 
-	validateLogEntry(
+	helper.ValidateLogEntry(
 		t,
 		w.Buffer[0],
 		logging.InfoLogLevel,
 		fmt.Sprintf("Connecting to RabbitMQ at %s...", cfg.URL),
 	)
 
-	validateLogEntry(
+	helper.ValidateLogEntry(
 		t,
 		w.Buffer[1],
 		logging.ErrorLogLevel,
@@ -244,7 +194,7 @@ func TestRabbitMQClientConnectFailure(t *testing.T) {
 }
 
 func TestRabbitMQClientConnectSuccess(t *testing.T) {
-	l, w := logrusLogging()
+	l, w := helper.NewTestLogging()
 
 	var client struct {
 		rabbitMQClientConnectSuccessful
@@ -276,7 +226,7 @@ func TestRabbitMQClientConnectSuccess(t *testing.T) {
 		t.Fatal("expected", 1, "got", logsLen)
 	}
 
-	validateLogEntry(
+	helper.ValidateLogEntry(
 		t,
 		w.Buffer[0],
 		logging.InfoLogLevel,
@@ -285,7 +235,7 @@ func TestRabbitMQClientConnectSuccess(t *testing.T) {
 }
 
 func TestRabbitMQClientReconnectConnectionInProgressFailure(t *testing.T) {
-	l, w := logrusLogging()
+	l, w := helper.NewTestLogging()
 
 	r := &amqp.RabbitMQ{
 		Log:        l,
@@ -306,7 +256,7 @@ func TestRabbitMQClientReconnectConnectionInProgressFailure(t *testing.T) {
 		t.Fatal("expected", 1, "got", logsLen)
 	}
 
-	validateLogEntry(
+	helper.ValidateLogEntry(
 		t,
 		w.Buffer[0],
 		logging.WarningLogLevel,
@@ -315,7 +265,7 @@ func TestRabbitMQClientReconnectConnectionInProgressFailure(t *testing.T) {
 }
 
 func TestRabbitMQClientReconnectSuccess(t *testing.T) {
-	l, w := logrusLogging()
+	l, w := helper.NewTestLogging()
 
 	var client struct {
 		rabbitMQClientConnectSuccessful
@@ -347,14 +297,14 @@ func TestRabbitMQClientReconnectSuccess(t *testing.T) {
 		t.Fatal("expected", 2, "got", logsLen)
 	}
 
-	validateLogEntry(
+	helper.ValidateLogEntry(
 		t,
 		w.Buffer[0],
 		logging.InfoLogLevel,
 		"Reconnect: Connecting...",
 	)
 
-	validateLogEntry(
+	helper.ValidateLogEntry(
 		t,
 		w.Buffer[1],
 		logging.InfoLogLevel,
