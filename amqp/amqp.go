@@ -4,6 +4,7 @@ package amqp
 type AMQP interface {
 	Connect() error
 	Publish(string, []byte) error
+	Consume() error
 	Ping() error
 	Close() error
 	Reconnect() error
@@ -14,6 +15,7 @@ type AMQPClient interface {
 	Connect() error
 	Close() error
 	Publish(string, []byte) error
+	Consume() error
 }
 
 // AMQPDial is used for dialing in to an AMQP service.

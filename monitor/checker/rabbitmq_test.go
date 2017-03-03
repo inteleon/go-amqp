@@ -20,6 +20,10 @@ func (c *testConn) Publish(routingKey string, payload []byte) error {
 	return nil
 }
 
+func (c *testConn) Consume() error {
+	return nil
+}
+
 func (c *testConn) Ping() error {
 	return c.pingRetVal
 }

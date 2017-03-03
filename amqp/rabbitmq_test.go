@@ -3,6 +3,7 @@ package amqp_test
 import (
 	"fmt"
 	"github.com/inteleon/go-amqp/amqp"
+	"github.com/inteleon/go-amqp/amqp/queue"
 	"github.com/inteleon/go-logging/helper"
 	"github.com/inteleon/go-logging/logging"
 	"reflect"
@@ -55,6 +56,12 @@ type rabbitMQClientPublishError struct{}
 
 func (r *rabbitMQClientPublishError) Publish(routingKey string, payload []byte) error {
 	return fmt.Errorf("Publish error")
+}
+
+type rabbitMQClientConsumeSuccessful struct{}
+
+func (r *rabbitMQClientConsumeSuccessful) Consume() error {
+	return nil
 }
 
 type rabbitMQDialSuccessful struct {
@@ -151,6 +158,7 @@ func TestRabbitMQClientConnectFailure(t *testing.T) {
 		rabbitMQClientConnectError
 		rabbitMQClientCloseSuccessful
 		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
 	}
 
 	cfg := simpleRabbitMQConfig()
@@ -200,6 +208,7 @@ func TestRabbitMQClientConnectSuccess(t *testing.T) {
 		rabbitMQClientConnectSuccessful
 		rabbitMQClientCloseSuccessful
 		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
 	}
 
 	cfg := simpleRabbitMQConfig()
@@ -271,6 +280,7 @@ func TestRabbitMQClientReconnectSuccess(t *testing.T) {
 		rabbitMQClientConnectSuccessful
 		rabbitMQClientCloseSuccessful
 		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
 	}
 
 	cfg := simpleRabbitMQConfig()
@@ -317,6 +327,7 @@ func TestRabbitMQClientPublishFailure(t *testing.T) {
 		rabbitMQClientConnectSuccessful
 		rabbitMQClientCloseSuccessful
 		rabbitMQClientPublishError
+		rabbitMQClientConsumeSuccessful
 	}
 
 	r := &amqp.RabbitMQ{
@@ -335,6 +346,7 @@ func TestRabbitMQClientPublishSuccess(t *testing.T) {
 		rabbitMQClientConnectSuccessful
 		rabbitMQClientCloseSuccessful
 		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
 	}
 
 	client.t = t
@@ -356,6 +368,7 @@ func TestRabbitMQClientPingFailure(t *testing.T) {
 		rabbitMQClientConnectSuccessful
 		rabbitMQClientCloseSuccessful
 		rabbitMQClientPublishError
+		rabbitMQClientConsumeSuccessful
 	}
 
 	r := &amqp.RabbitMQ{
@@ -374,6 +387,7 @@ func TestRabbitMQClientPingSuccess(t *testing.T) {
 		rabbitMQClientConnectSuccessful
 		rabbitMQClientCloseSuccessful
 		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
 	}
 
 	client.t = t
@@ -395,6 +409,7 @@ func TestRabbitMQClientCloseFailure(t *testing.T) {
 		rabbitMQClientConnectSuccessful
 		rabbitMQClientCloseError
 		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
 	}
 
 	r := &amqp.RabbitMQ{
@@ -413,6 +428,7 @@ func TestRabbitMQClientCloseSuccess(t *testing.T) {
 		rabbitMQClientConnectSuccessful
 		rabbitMQClientCloseSuccessful
 		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
 	}
 
 	r := &amqp.RabbitMQ{
@@ -423,4 +439,47 @@ func TestRabbitMQClientCloseSuccess(t *testing.T) {
 	if close != nil {
 		t.Fatal("expected", nil, "got", close)
 	}
+}
+
+// TDD tests. :-)
+
+func TestQueueConsuming(t *testing.T) {
+	l, w := helper.NewTestLogging()
+
+	defer func(t *testing.T, l logging.Logging, w *helper.TestLogWriter) {
+		if r := recover(); r == nil {
+			t.Fatal("expected", "panic", "got", nil)
+		}
+
+		// The program panics before reaching the init of the "hax" queue consumer.
+		// Therefore we only expect 1 log entry to have been written.
+		bufLen := len(w.Buffer)
+		if bufLen != 1 {
+			t.Fatal("expected", 1, "got", bufLen)
+		}
+
+		helper.ValidateLogEntry(
+			t,
+			w.Buffer[0],
+			logging.InfoLogLevel,
+			"Starting up a consumer for the following queue: test",
+		)
+
+	}(t, l, w)
+
+	client := &amqp.RabbitMQClient{
+		Cfg: &amqp.RabbitMQConfig{
+			Queues: []queue.RabbitMQQueue{
+				{
+					Name: "test",
+				},
+				{
+					Name: "hax",
+				},
+			},
+		},
+		Log: l,
+	}
+
+	client.Consume()
 }

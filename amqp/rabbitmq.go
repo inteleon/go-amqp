@@ -2,6 +2,7 @@ package amqp
 
 import (
 	"fmt"
+	"github.com/inteleon/go-amqp/amqp/queue"
 	"github.com/inteleon/go-logging/logging"
 	aq "github.com/streadway/amqp"
 )
@@ -9,16 +10,7 @@ import (
 // RabbitMQConfig is a configuration structure for the RabbitMQ client.
 type RabbitMQConfig struct {
 	URL    string
-	Queues []RabbitMQQueue
-}
-
-// RabbitMQQueue defines a single queue that we will connect to (and declare if needed).
-type RabbitMQQueue struct {
-	Name       string
-	Durable    bool
-	AutoDelete bool
-	Exclusive  bool
-	NoWait     bool
+	Queues []queue.RabbitMQQueue
 }
 
 // RabbitMQClient is the low level client used when talking with the RabbitMQ service.
@@ -26,6 +18,7 @@ type RabbitMQClient struct {
 	Cfg     *RabbitMQConfig
 	Conn    *aq.Connection
 	Channel *aq.Channel
+	Log     logging.Logging
 }
 
 // Connect takes care of "on connect" specific tasks.
@@ -73,10 +66,30 @@ func (c *RabbitMQClient) Publish(routingKey string, payload []byte) error {
 	)
 }
 
+// Consume takes care of starting up queue consumers.
+func (c *RabbitMQClient) Consume() error {
+	for i, _ := range c.Cfg.Queues {
+		cons := queue.NewRabbitMQConsumer(
+			queue.RabbitMQConsumerOptions{
+				RabbitMQChan: c.Channel,
+				Queue:        &c.Cfg.Queues[i],
+				Log:          c.Log,
+			},
+		)
+
+		if err := cons.Start(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // RabbitMQDial is used for establishing a connection to the RabbitMQ service.
 type RabbitMQDial struct {
 	Cfg *RabbitMQConfig
 	URL string
+	Log logging.Logging
 }
 
 // Dial establishes a connection to the RabbitMQ service and returns a RabbitMQClient.
@@ -95,6 +108,7 @@ func (d *RabbitMQDial) Dial() (AMQPClient, error) {
 		Conn:    conn,
 		Channel: channel,
 		Cfg:     d.Cfg,
+		Log:     d.Log,
 	}, nil
 }
 
@@ -118,6 +132,7 @@ func NewRabbitMQ(url string, cfg *RabbitMQConfig) *RabbitMQ {
 		Dial: &RabbitMQDial{
 			Cfg: cfg,
 			URL: url,
+			Log: l,
 		},
 		Connecting: false,
 	}
@@ -159,6 +174,11 @@ func (a *RabbitMQ) Connect() (err error) {
 // Publish takes care of dispatching messages to RabbitMQ.
 func (a *RabbitMQ) Publish(routingKey string, payload []byte) error {
 	return a.Client.Publish(routingKey, payload)
+}
+
+// Consume takes care of starting up queue consumers.
+func (a *RabbitMQ) Consume() error {
+	return a.Client.Consume()
 }
 
 // Ping is used for detecting dead RabbitMQ connections.
