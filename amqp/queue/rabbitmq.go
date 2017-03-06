@@ -7,6 +7,12 @@ import (
 	aq "github.com/streadway/amqp"
 )
 
+// RabbitMQPayload is the full payload delivered to the consumer processor.
+type RabbitMQPayload struct {
+	Consumer *RabbitMQConsumer
+	Delivery aq.Delivery
+}
+
 // RabbitMQQueue defines a single queue that we will connect to (and declare if needed).
 type RabbitMQQueue struct {
 	Name        string
@@ -45,7 +51,7 @@ func (rc *rabbitMQConsumerChannel) Stop() error {
 }
 
 // ProcessFunc is the function used to process every incoming message.
-type ProcessFunc func(*RabbitMQConsumer, aq.Delivery)
+type ProcessFunc func(RabbitMQPayload)
 
 // RabbitMQConsumer is the consumer struct for RabbitMQ.
 type RabbitMQConsumer struct {
@@ -88,7 +94,12 @@ func (r *RabbitMQConsumer) Start() error {
 
 	go func(r *RabbitMQConsumer, d <-chan aq.Delivery) {
 		for delivery := range d {
-			r.Queue.ProcessFunc(r, delivery)
+			r.Queue.ProcessFunc(
+				RabbitMQPayload{
+					Consumer: r,
+					Delivery: delivery,
+				},
+			)
 		}
 
 		r.Log.Warn("The delivery channel has been closed! Exiting...")

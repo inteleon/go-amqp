@@ -24,8 +24,8 @@ func (cc *testConsumerChannel) Stop() error {
 	return nil
 }
 
-func testProcessFunc(c *queue.RabbitMQConsumer, d aq.Delivery) {
-	c.Log.Debug(fmt.Sprintf("Consumer test process executed. User id: %s", d.UserId))
+func testProcessFunc(p queue.RabbitMQPayload) {
+	p.Consumer.Log.Debug(fmt.Sprintf("Consumer test process executed. User id: %s", p.Delivery.UserId))
 }
 
 func TestFullFlow(t *testing.T) {

@@ -88,13 +88,12 @@ func (c *RabbitMQClient) Consume() error {
 // RabbitMQDial is used for establishing a connection to the RabbitMQ service.
 type RabbitMQDial struct {
 	Cfg *RabbitMQConfig
-	URL string
 	Log logging.Logging
 }
 
 // Dial establishes a connection to the RabbitMQ service and returns a RabbitMQClient.
 func (d *RabbitMQDial) Dial() (AMQPClient, error) {
-	conn, err := aq.Dial(d.URL)
+	conn, err := aq.Dial(d.Cfg.URL)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +121,7 @@ type RabbitMQ struct {
 }
 
 // NewRabbitMQ creates and returns a new RabbitMQ object.
-func NewRabbitMQ(url string, cfg *RabbitMQConfig) *RabbitMQ {
+func NewRabbitMQ(cfg *RabbitMQConfig) *RabbitMQ {
 	l := logging.NewLogrusLogging()
 	l.SetLogLevel(logging.DebugLogLevel)
 
@@ -131,7 +130,6 @@ func NewRabbitMQ(url string, cfg *RabbitMQConfig) *RabbitMQ {
 		Log: l,
 		Dial: &RabbitMQDial{
 			Cfg: cfg,
-			URL: url,
 			Log: l,
 		},
 		Connecting: false,
