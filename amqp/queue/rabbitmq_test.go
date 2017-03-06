@@ -24,7 +24,7 @@ func (cc *testConsumerChannel) Stop() error {
 	return nil
 }
 
-func testProcessFunc(p queue.RabbitMQPayload) {
+func testProcessFunc(p queue.RabbitMQContext) {
 	p.Consumer.Log.Debug(fmt.Sprintf("Consumer test process executed. User id: %s", p.Delivery.UserId))
 }
 

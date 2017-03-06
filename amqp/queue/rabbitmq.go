@@ -7,8 +7,9 @@ import (
 	aq "github.com/streadway/amqp"
 )
 
-// RabbitMQPayload is the full payload delivered to the consumer processor.
-type RabbitMQPayload struct {
+// RabbitMQContext is a RabbitMQ context.
+// It holds the RabbitMQ consumer object reference and a delivery payload.
+type RabbitMQContext struct {
 	Consumer *RabbitMQConsumer
 	Delivery aq.Delivery
 }
@@ -51,7 +52,7 @@ func (rc *rabbitMQConsumerChannel) Stop() error {
 }
 
 // ProcessFunc is the function used to process every incoming message.
-type ProcessFunc func(RabbitMQPayload)
+type ProcessFunc func(RabbitMQContext)
 
 // RabbitMQConsumer is the consumer struct for RabbitMQ.
 type RabbitMQConsumer struct {
@@ -95,7 +96,7 @@ func (r *RabbitMQConsumer) Start() error {
 	go func(r *RabbitMQConsumer, d <-chan aq.Delivery) {
 		for delivery := range d {
 			r.Queue.ProcessFunc(
-				RabbitMQPayload{
+				RabbitMQContext{
 					Consumer: r,
 					Delivery: delivery,
 				},
