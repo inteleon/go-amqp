@@ -25,7 +25,9 @@ func (cc *testConsumerChannel) Stop() error {
 }
 
 func testProcessFunc(p queue.RabbitMQContext) {
-	p.Consumer.Log.Debug(fmt.Sprintf("Consumer test process executed. User id: %s", p.Delivery.UserId))
+	payload, _ := p.Delivery.Payload()
+
+	p.Consumer.Log.Debug(fmt.Sprintf("Consumer test process executed. Body: %s", string(payload)))
 }
 
 func TestFullFlow(t *testing.T) {
@@ -47,7 +49,7 @@ func TestFullFlow(t *testing.T) {
 	c.Start()
 
 	dChan <- aq.Delivery{
-		UserId: "1337",
+		Body: []byte("1337"),
 	}
 
 	c.Stop()
@@ -70,7 +72,7 @@ func TestFullFlow(t *testing.T) {
 		t,
 		w.Buffer[1],
 		logging.DebugLogLevel,
-		"Consumer test process executed. User id: 1337",
+		"Consumer test process executed. Body: 1337",
 	)
 
 	helper.ValidateLogEntry(

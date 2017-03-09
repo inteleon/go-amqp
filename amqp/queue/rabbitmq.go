@@ -11,7 +11,27 @@ import (
 // It holds the RabbitMQ consumer object reference and a delivery payload.
 type RabbitMQContext struct {
 	Consumer *RabbitMQConsumer
+	Delivery AMQPDelivery
+}
+
+// RabbitMQDelivery implements the AMQPDelivery interface for returning RabbitMQ specific delivery data (payload, etc.).
+type RabbitMQDelivery struct {
 	Delivery aq.Delivery
+}
+
+// Payload returns the RabbitMQ delivery payload.
+func (d *RabbitMQDelivery) Payload() ([]byte, error) {
+	return d.Delivery.Body, nil
+}
+
+// Ack acks the message.
+func (d *RabbitMQDelivery) Ack(multiple bool) error {
+	return d.Delivery.Ack(multiple)
+}
+
+// Nack nacks the message.
+func (d *RabbitMQDelivery) Nack(multiple, requeue bool) error {
+	return d.Delivery.Nack(multiple, requeue)
 }
 
 // RabbitMQQueue defines a single queue that we will connect to (and declare if needed).
@@ -98,7 +118,9 @@ func (r *RabbitMQConsumer) Start() error {
 			r.Queue.ProcessFunc(
 				RabbitMQContext{
 					Consumer: r,
-					Delivery: delivery,
+					Delivery: &RabbitMQDelivery{
+						Delivery: delivery,
+					},
 				},
 			)
 		}
