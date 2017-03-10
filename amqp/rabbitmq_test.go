@@ -78,8 +78,8 @@ func (d *rabbitMQDialError) Dial() (amqp.AMQPClient, error) {
 	return nil, fmt.Errorf("Dial error")
 }
 
-func simpleRabbitMQConfig() *amqp.RabbitMQConfig {
-	return &amqp.RabbitMQConfig{
+func simpleRabbitMQConfig() amqp.RabbitMQConfig {
+	return amqp.RabbitMQConfig{
 		URL: "hax://haxor.yo",
 	}
 }
@@ -468,7 +468,7 @@ func TestQueueConsuming(t *testing.T) {
 	}(t, l, w)
 
 	client := &amqp.RabbitMQClient{
-		Cfg: &amqp.RabbitMQConfig{
+		Cfg: amqp.RabbitMQConfig{
 			Queues: []queue.RabbitMQQueue{
 				{
 					Name: "test",

@@ -15,7 +15,7 @@ type RabbitMQConfig struct {
 
 // RabbitMQClient is the low level client used when talking with the RabbitMQ service.
 type RabbitMQClient struct {
-	Cfg     *RabbitMQConfig
+	Cfg     RabbitMQConfig
 	Conn    *aq.Connection
 	Channel *aq.Channel
 	Log     logging.Logging
@@ -87,7 +87,7 @@ func (c *RabbitMQClient) Consume() error {
 
 // RabbitMQDial is used for establishing a connection to the RabbitMQ service.
 type RabbitMQDial struct {
-	Cfg *RabbitMQConfig
+	Cfg RabbitMQConfig
 	Log logging.Logging
 }
 
@@ -113,7 +113,7 @@ func (d *RabbitMQDial) Dial() (AMQPClient, error) {
 
 // RabbitMQ is a RabbitMQ implementation of the AMQP interface.
 type RabbitMQ struct {
-	Cfg        *RabbitMQConfig
+	Cfg        RabbitMQConfig
 	Log        logging.Logging
 	Client     AMQPClient
 	Dial       AMQPDial
@@ -121,7 +121,7 @@ type RabbitMQ struct {
 }
 
 // NewRabbitMQ creates and returns a new RabbitMQ object.
-func NewRabbitMQ(cfg *RabbitMQConfig) *RabbitMQ {
+func NewRabbitMQ(cfg RabbitMQConfig) *RabbitMQ {
 	l := logging.NewLogrusLogging()
 	l.SetLogLevel(logging.DebugLogLevel)
 
