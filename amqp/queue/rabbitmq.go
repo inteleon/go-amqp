@@ -115,7 +115,7 @@ func (r *RabbitMQConsumer) Start() error {
 
 	go func(r *RabbitMQConsumer, d <-chan aq.Delivery) {
 		for delivery := range d {
-			r.Queue.ProcessFunc(
+			go r.Queue.ProcessFunc(
 				RabbitMQContext{
 					Consumer: r,
 					Delivery: &RabbitMQDelivery{
