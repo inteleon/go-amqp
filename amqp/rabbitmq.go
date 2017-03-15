@@ -113,11 +113,12 @@ func (d *RabbitMQDial) Dial() (AMQPClient, error) {
 
 // RabbitMQ is a RabbitMQ implementation of the AMQP interface.
 type RabbitMQ struct {
-	Cfg        RabbitMQConfig
-	Log        logging.Logging
-	Client     AMQPClient
-	Dial       AMQPDial
-	Connecting bool
+	Cfg                RabbitMQConfig
+	Log                logging.Logging
+	Client             AMQPClient
+	Dial               AMQPDial
+	Connecting         bool
+	ReconnectConsumers bool
 }
 
 // NewRabbitMQ creates and returns a new RabbitMQ object.
@@ -171,21 +172,39 @@ func (a *RabbitMQ) Connect() (err error) {
 
 // Publish takes care of dispatching messages to RabbitMQ.
 func (a *RabbitMQ) Publish(routingKey string, payload []byte) error {
+	if a.Client == nil {
+		return a.clientDoesNotExist()
+	}
+
 	return a.Client.Publish(routingKey, payload)
 }
 
 // Consume takes care of starting up queue consumers.
 func (a *RabbitMQ) Consume() error {
+	if a.Client == nil {
+		return a.clientDoesNotExist()
+	}
+
+	a.ReconnectConsumers = true
+
 	return a.Client.Consume()
 }
 
 // Ping is used for detecting dead RabbitMQ connections.
 func (a *RabbitMQ) Ping() error {
+	if a.Client == nil {
+		return a.clientDoesNotExist()
+	}
+
 	return a.Client.Publish("ping", []byte("ping"))
 }
 
 // Close shuts down the AMQP connection.
 func (a *RabbitMQ) Close() error {
+	if a.Client == nil {
+		return a.clientDoesNotExist()
+	}
+
 	return a.Client.Close()
 }
 
@@ -200,5 +219,23 @@ func (a *RabbitMQ) Reconnect() (err error) {
 
 	a.Log.Info("Reconnect: Connecting...")
 
-	return a.Connect()
+	err = a.Connect()
+	if err != nil {
+		return
+	}
+
+	if a.ReconnectConsumers {
+		a.Log.Info("Reconnect: Starting up consumers...")
+
+		return a.Consume()
+	}
+
+	return
+}
+
+func (a *RabbitMQ) clientDoesNotExist() error {
+	errMsg := "No available client!"
+	a.Log.Error(errMsg)
+
+	return fmt.Errorf(errMsg)
 }

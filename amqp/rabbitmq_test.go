@@ -322,6 +322,63 @@ func TestRabbitMQClientReconnectSuccess(t *testing.T) {
 	)
 }
 
+func TestRabbitMQClientReconnectReConsumeSuccess(t *testing.T) {
+	l, w := helper.NewTestLogging()
+
+	var client struct {
+		rabbitMQClientConnectSuccessful
+		rabbitMQClientCloseSuccessful
+		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
+	}
+
+	cfg := simpleRabbitMQConfig()
+	r := &amqp.RabbitMQ{
+		Cfg: cfg,
+		Dial: &rabbitMQDialSuccessful{
+			Client: &client,
+		},
+		Log:                l,
+		Connecting:         false,
+		ReconnectConsumers: true,
+	}
+
+	reconnect := r.Reconnect()
+	if reconnect != nil {
+		t.Fatal("expected", nil, "got", reconnect)
+	}
+
+	if r.Connecting {
+		t.Fatal("expected", false, "got", r.Connecting)
+	}
+
+	logsLen := len(w.Buffer)
+	if logsLen != 3 {
+		t.Fatal("expected", 3, "got", logsLen)
+	}
+
+	helper.ValidateLogEntry(
+		t,
+		w.Buffer[0],
+		logging.InfoLogLevel,
+		"Reconnect: Connecting...",
+	)
+
+	helper.ValidateLogEntry(
+		t,
+		w.Buffer[1],
+		logging.InfoLogLevel,
+		fmt.Sprintf("Connecting to RabbitMQ at %s...", cfg.URL),
+	)
+
+	helper.ValidateLogEntry(
+		t,
+		w.Buffer[2],
+		logging.InfoLogLevel,
+		"Reconnect: Starting up consumers...",
+	)
+}
+
 func TestRabbitMQClientPublishFailure(t *testing.T) {
 	var client struct {
 		rabbitMQClientConnectSuccessful
@@ -439,6 +496,37 @@ func TestRabbitMQClientCloseSuccess(t *testing.T) {
 	if close != nil {
 		t.Fatal("expected", nil, "got", close)
 	}
+}
+
+func TestClientDoesNotExist(t *testing.T) {
+	l, w := helper.NewTestLogging()
+
+	r := &amqp.RabbitMQ{
+		Log: l,
+	}
+
+	cons := r.Consume()
+
+	if cons == nil {
+		t.Fatal("expected", "error", "got", cons)
+	}
+
+	expectedErrMsg := "No available client!"
+	if cons.Error() != expectedErrMsg {
+		t.Fatal("expected", expectedErrMsg, "got", cons.Error())
+	}
+
+	bufLen := len(w.Buffer)
+	if bufLen != 1 {
+		t.Fatal("expected", 1, "got", bufLen)
+	}
+
+	helper.ValidateLogEntry(
+		t,
+		w.Buffer[0],
+		logging.ErrorLogLevel,
+		expectedErrMsg,
+	)
 }
 
 // TDD tests. :-)
