@@ -11,6 +11,7 @@ import (
 type RabbitMQConfig struct {
 	URL    string
 	Queues []queue.RabbitMQQueue
+	Log    logging.Logging
 }
 
 // RabbitMQClient is the low level client used when talking with the RabbitMQ service.
@@ -123,8 +124,14 @@ type RabbitMQ struct {
 
 // NewRabbitMQ creates and returns a new RabbitMQ object.
 func NewRabbitMQ(cfg RabbitMQConfig) *RabbitMQ {
-	l := logging.NewLogrusLogging()
-	l.SetLogLevel(logging.DebugLogLevel)
+	var l logging.Logging
+
+	if cfg.Log == nil {
+		l = logging.NewLogrusLogging()
+		l.SetLogLevel(logging.DebugLogLevel)
+	} else {
+		l = cfg.Log
+	}
 
 	return &RabbitMQ{
 		Cfg: cfg,
