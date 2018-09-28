@@ -128,7 +128,7 @@ func NewRabbitMQ(cfg RabbitMQConfig) *RabbitMQ {
 	var l logging.Logging
 
 	if cfg.Log == nil {
-		l = logging.NewLogrusLogging(logging.LogrusLoggingOptions{})
+		l, _ := logging.NewLogrusLogging(logging.LogrusLoggingOptions{})
 		l.SetLogLevel(logging.DebugLogLevel)
 	} else {
 		l = cfg.Log
