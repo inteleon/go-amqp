@@ -2,6 +2,7 @@ package amqp
 
 import (
 	"fmt"
+
 	"github.com/inteleon/go-amqp/amqp/queue"
 	"github.com/inteleon/go-logging/logging"
 	aq "github.com/streadway/amqp"
@@ -127,7 +128,7 @@ func NewRabbitMQ(cfg RabbitMQConfig) *RabbitMQ {
 	var l logging.Logging
 
 	if cfg.Log == nil {
-		l = logging.NewLogrusLogging()
+		l = logging.NewLogrusLogging(logging.LogrusLoggingOptions{})
 		l.SetLogLevel(logging.DebugLogLevel)
 	} else {
 		l = cfg.Log
