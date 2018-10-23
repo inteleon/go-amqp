@@ -571,3 +571,41 @@ func TestQueueConsuming(t *testing.T) {
 
 	client.Consume()
 }
+
+func TestRabbitMQClientConnectQueueSkipDeclareSuccess(t *testing.T) {
+	l, w := helper.NewTestLogging()
+
+	client := &amqp.RabbitMQClient{
+		Cfg: amqp.RabbitMQConfig{
+			Queues: []queue.RabbitMQQueue{
+				{
+					Name:        "test",
+					SkipDeclare: true,
+				},
+				{
+					Name:        "hax",
+					SkipDeclare: true,
+				},
+			},
+		},
+		Log: l,
+	}
+
+	if err := client.Connect(); err != nil {
+		t.Fatal(err)
+	}
+
+	logsLen := len(w.Buffer)
+	if logsLen != 2 {
+		t.Fatal("expected", 2, "got", logsLen)
+	}
+
+	for k, v := range []string{"test", "hax"} {
+		helper.ValidateLogEntry(
+			t,
+			w.Buffer[k],
+			logging.InfoLogLevel,
+			fmt.Sprintf("Skipping declaration of queue: %s", v),
+		)
+	}
+}

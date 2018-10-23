@@ -41,6 +41,7 @@ type RabbitMQQueue struct {
 	AutoDelete  bool
 	Exclusive   bool
 	NoWait      bool
+	SkipDeclare bool
 	ProcessFunc ProcessFunc
 }
 

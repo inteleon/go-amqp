@@ -26,6 +26,12 @@ type RabbitMQClient struct {
 // Connect takes care of "on connect" specific tasks.
 func (c *RabbitMQClient) Connect() error {
 	for _, q := range c.Cfg.Queues {
+		if q.SkipDeclare {
+			c.Log.Info(fmt.Sprintf("Skipping declaration of queue: %s", q.Name))
+
+			continue
+		}
+
 		// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
 		// more information about the arguments.
 		_, err := c.Channel.QueueDeclare(
