@@ -575,18 +575,20 @@ func TestQueueConsuming(t *testing.T) {
 func TestRabbitMQClientConnectQueueSkipDeclareSuccess(t *testing.T) {
 	l, w := helper.NewTestLogging()
 
+	queues := []queue.RabbitMQQueue{
+		{
+			Name:        "test",
+			SkipDeclare: true,
+		},
+		{
+			Name:        "hax",
+			SkipDeclare: true,
+		},
+	}
+
 	client := &amqp.RabbitMQClient{
 		Cfg: amqp.RabbitMQConfig{
-			Queues: []queue.RabbitMQQueue{
-				{
-					Name:        "test",
-					SkipDeclare: true,
-				},
-				{
-					Name:        "hax",
-					SkipDeclare: true,
-				},
-			},
+			Queues: queues,
 		},
 		Log: l,
 	}
@@ -600,12 +602,12 @@ func TestRabbitMQClientConnectQueueSkipDeclareSuccess(t *testing.T) {
 		t.Fatal("expected", 2, "got", logsLen)
 	}
 
-	for k, v := range []string{"test", "hax"} {
+	for k, q := range queues {
 		helper.ValidateLogEntry(
 			t,
 			w.Buffer[k],
 			logging.InfoLogLevel,
-			fmt.Sprintf("Skipping declaration of queue: %s", v),
+			fmt.Sprintf("Skipping declaration of queue: %s", q.Name),
 		)
 	}
 }
