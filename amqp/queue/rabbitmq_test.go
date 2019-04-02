@@ -46,15 +46,16 @@ func TestFullFlow(t *testing.T) {
 		},
 	}
 
+	// Note ugly use of sleeps, makes sure log messages are deterministically ordered for the asserts.
 	c.Start()
-
+	time.Sleep(10 * time.Millisecond)
 	dChan <- aq.Delivery{
 		Body: []byte("1337"),
 	}
-
+	time.Sleep(10 * time.Millisecond)
 	c.Stop()
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(500 * time.Millisecond)
 
 	bufLen := len(w.Buffer)
 	if bufLen != 4 {
