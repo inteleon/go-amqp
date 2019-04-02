@@ -35,7 +35,7 @@ func (c *RabbitMQClient) Connect() error {
 		// If AutoDLQ is true, provision DLQ and DLE for this queue
 		if q.AutoDLQ {
 
-			dlx := q.Name + "exchange.dead-letter"
+			dlx := q.Name + ".exchange.dead-letter"
 			dlxq := q.Name + ".dead-letter"
 
 			// Exchange for dead letters.
@@ -57,7 +57,7 @@ func (c *RabbitMQClient) Connect() error {
 			}
 
 			// Queue to consume messages from (with dlx).
-			cq, err := c.Channel.QueueDeclare(q.Name, true, false, false, false, aq.Table{
+			_, err = c.Channel.QueueDeclare(q.Name, true, false, false, false, aq.Table{
 				"x-dead-letter-exchange":    dlx,
 				"x-dead-letter-routing-key": dlxQueue.Name,
 			})
@@ -65,10 +65,10 @@ func (c *RabbitMQClient) Connect() error {
 				return err
 			}
 
-			err = c.Channel.QueueBind(cq.Name, q.Name, q.Name+"exchange", true, nil)
-			if err != nil {
-				return err
-			}
+			//err = c.Channel.QueueBind(cq.Name, q.Name, q.Name+".exchange", true, nil)
+			//if err != nil {
+			//	return err
+			//}
 		} else {
 			// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
 			// more information about the arguments.
