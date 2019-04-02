@@ -3,7 +3,7 @@ module github.com/inteleon/go-amqp
 go 1.12
 
 require (
-	github.com/inteleon/go-logging v1.0.1
+	github.com/inteleon/go-logging v1.0.2
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/satori/go.uuid v1.2.0
