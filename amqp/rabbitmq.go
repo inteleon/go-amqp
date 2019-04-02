@@ -32,17 +32,28 @@ func (c *RabbitMQClient) Connect() error {
 			continue
 		}
 
-		// If AutoDLQ is true, provision DLQ and DLE for this queue
-		if q.AutoDLQ {
-
-			dlx := q.Name + ".exchange.dead-letter"
-			dlxq := q.Name + ".dead-letter"
-
-			// Exchange for dead letters.
-			err := c.Channel.ExchangeDeclare(dlx, "direct", true, false, false, false, nil)
+		// Declare exchange and DLE if an exchange name is specified
+		if q.Exchange != "" {
+			err := c.Channel.ExchangeDeclare(q.Exchange, "direct", true, false, false, false, nil)
 			if err != nil {
 				return err
 			}
+
+			// Exchange for dead letters.
+			dlx := q.Exchange + ".dead-letter"
+			err = c.Channel.ExchangeDeclare(dlx, "direct", true, false, false, false, nil)
+			if err != nil {
+				return err
+			}
+		}
+
+		// If AutoDLQ is true, provision DLQ and DLE for this queue
+		if q.AutoDLQ {
+			if q.Exchange == "" {
+				return fmt.Errorf("exchange is a required parameter when AutoDLQ is true")
+			}
+			dlx := q.Exchange + ".dead-letter"
+			dlxq := q.Name + ".dead-letter"
 
 			// Queue for dead letters.
 			dlxQueue, err := c.Channel.QueueDeclare(dlxq, true, false, false, false, nil)
@@ -57,7 +68,7 @@ func (c *RabbitMQClient) Connect() error {
 			}
 
 			// Queue to consume messages from (with dlx).
-			_, err = c.Channel.QueueDeclare(q.Name, true, false, false, false, aq.Table{
+			cq, err := c.Channel.QueueDeclare(q.Name, true, false, false, false, aq.Table{
 				"x-dead-letter-exchange":    dlx,
 				"x-dead-letter-routing-key": dlxQueue.Name,
 			})
@@ -65,14 +76,14 @@ func (c *RabbitMQClient) Connect() error {
 				return err
 			}
 
-			//err = c.Channel.QueueBind(cq.Name, q.Name, q.Name+".exchange", true, nil)
-			//if err != nil {
-			//	return err
-			//}
+			err = c.Channel.QueueBind(cq.Name, q.Name, q.Exchange, true, nil)
+			if err != nil {
+				return err
+			}
 		} else {
 			// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
 			// more information about the arguments.
-			_, err := c.Channel.QueueDeclare(
+			cq, err := c.Channel.QueueDeclare(
 				q.Name,
 				q.Durable,    // durable
 				q.AutoDelete, // auto-delete
@@ -82,6 +93,14 @@ func (c *RabbitMQClient) Connect() error {
 			)
 			if err != nil {
 				return err
+			}
+
+			// Bind to exchange if such is specified. Otherwise the queue declared above will bind to AMQP Default
+			if q.Exchange != "" {
+				err = c.Channel.QueueBind(cq.Name, q.Name, q.Exchange, true, nil)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
