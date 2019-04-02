@@ -32,22 +32,59 @@ func (c *RabbitMQClient) Connect() error {
 			continue
 		}
 
-		// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
-		// more information about the arguments.
-		_, err := c.Channel.QueueDeclare(
-			q.Name,
-			q.Durable,    // durable
-			q.AutoDelete, // auto-delete
-			q.Exclusive,  // exclusive
-			q.NoWait,     // no-wait
-			nil,          // arguments
-		)
+		// If AutoDLQ is true, provision DLQ and DLE for this queue
+		if q.AutoDLQ {
 
-		if err != nil {
-			return err
+			dlx := q.Name + "exchange.dead-letter"
+			dlxq := q.Name + ".dead-letter"
+
+			// Exchange for dead letters.
+			err := c.Channel.ExchangeDeclare(dlx, "direct", true, false, false, false, nil)
+			if err != nil {
+				return err
+			}
+
+			// Queue for dead letters.
+			dlxQueue, err := c.Channel.QueueDeclare(dlxq, true, false, false, false, nil)
+			if err != nil {
+				return err
+			}
+
+			// Bind dead letter queue.
+			err = c.Channel.QueueBind(dlxQueue.Name, dlxq, dlx, false, nil)
+			if err != nil {
+				return err
+			}
+
+			// Queue to consume messages from (with dlx).
+			cq, err := c.Channel.QueueDeclare(q.Name, true, false, false, false, aq.Table{
+				"x-dead-letter-exchange":    dlx,
+				"x-dead-letter-routing-key": dlxQueue.Name,
+			})
+			if err != nil {
+				return err
+			}
+
+			err = c.Channel.QueueBind(cq.Name, q.Name, q.Name+"exchange", true, nil)
+			if err != nil {
+				return err
+			}
+		} else {
+			// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
+			// more information about the arguments.
+			_, err := c.Channel.QueueDeclare(
+				q.Name,
+				q.Durable,    // durable
+				q.AutoDelete, // auto-delete
+				q.Exclusive,  // exclusive
+				q.NoWait,     // no-wait
+				nil,          // arguments
+			)
+			if err != nil {
+				return err
+			}
 		}
 	}
-
 	return nil
 }
 

@@ -43,6 +43,7 @@ type RabbitMQQueue struct {
 	NoWait      bool
 	SkipDeclare bool
 	ProcessFunc ProcessFunc
+	AutoDLQ     bool
 }
 
 type rabbitMQConsumerChannel struct {
