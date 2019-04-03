@@ -26,8 +26,8 @@ type RabbitMQClient struct {
 // Connect takes care of "on connect" specific tasks. Queue(s) and Exchange(s) may be created on the fly given the queues
 // specified in the slice of RabbitMQQueue.
 //
-// q.Exchange - if not "", an exchange and corresponding dead-letter exchange will be created
-// q.AutoDLQ - if true, a DLQ with bindnings will be created for the queue specified in q.Name
+// q.Exchange - if not nil, an exchange will be created. If AutoDLE is true, a corresponding dead-letter exchange is created as well.
+// q.AutoDLQ - if true, a DLQ with bindings will be created for the queue specified in q.Name.
 func (c *RabbitMQClient) Connect() error {
 	for _, q := range c.Cfg.Queues {
 		if q.SkipDeclare {
