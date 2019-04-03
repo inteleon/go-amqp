@@ -20,7 +20,6 @@ func (cc *testConsumerChannel) Start() (<-chan aq.Delivery, error) {
 
 func (cc *testConsumerChannel) Stop() error {
 	close(cc.deliveryChan)
-
 	return nil
 }
 
