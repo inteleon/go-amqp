@@ -36,7 +36,7 @@ func (c *RabbitMQClient) Connect() error {
 			continue
 		}
 
-		// Declare exchange and DLE if an exchange name is specified
+		// Declare exchange and DLE if an exchange is specified
 		if q.Exchange != nil {
 			err := c.declareExchange(q.Exchange)
 			if err != nil {

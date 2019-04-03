@@ -35,6 +35,15 @@ func (d *RabbitMQDelivery) Nack(multiple, requeue bool) error {
 }
 
 // RabbitMQQueue defines a single queue that we will connect to (and declare if needed).
+// Name			Name of queue
+// Exchange		optional pointer to a RabbitMQExchange struct. If present, the exchange is created
+// Durable      see streadway docs
+// AutoDelete   see streadway docs
+// Exclusive    see streadway docs
+// NoWait       see streadway docs
+// SkipDeclare  see streadway docs
+// ProcessFunc  Function to invoke when a message is processed
+// AutoDLQ      if true, a DLQ is automatically created. Requires Exchange to be set on the struct with DLE true
 type RabbitMQQueue struct {
 	Name        string
 	Exchange    *RabbitMQExchange
@@ -47,6 +56,13 @@ type RabbitMQQueue struct {
 	AutoDLQ     bool
 }
 
+// RabbitMQExchange defines an exchange
+// Name 		name of exchange
+// Kind			direct, topic etc
+// Durable		see streadway docs
+// AutoDelete 	see streadway docs
+// NoWait		see streadway docs
+// AutoDLE		if true, create a companion dead-letter exchange
 type RabbitMQExchange struct {
 	Name       string
 	Kind       string
