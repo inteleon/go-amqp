@@ -23,7 +23,11 @@ type RabbitMQClient struct {
 	Log     logging.Logging
 }
 
-// Connect takes care of "on connect" specific tasks.
+// Connect takes care of "on connect" specific tasks. Queue(s) and Exchange(s) may be created on the fly given the queues
+// specified in the slice of RabbitMQQueue.
+//
+// q.Exchange - if not "", an exchange and corresponding dead-letter exchange will be created
+// q.AutoDLQ - if true, a DLQ with bindnings will be created for the queue specified in q.Name
 func (c *RabbitMQClient) Connect() error {
 	for _, q := range c.Cfg.Queues {
 		if q.SkipDeclare {
@@ -33,76 +37,106 @@ func (c *RabbitMQClient) Connect() error {
 		}
 
 		// Declare exchange and DLE if an exchange name is specified
-		if q.Exchange != "" {
-			err := c.Channel.ExchangeDeclare(q.Exchange, "direct", true, false, false, false, nil)
-			if err != nil {
-				return err
-			}
-
-			// Exchange for dead letters.
-			dlx := q.Exchange + ".dead-letter"
-			err = c.Channel.ExchangeDeclare(dlx, "direct", true, false, false, false, nil)
+		if q.Exchange != nil {
+			err := c.declareExchange(q.Exchange)
 			if err != nil {
 				return err
 			}
 		}
 
-		// If AutoDLQ is true, provision DLQ and DLE for this queue
+		// If AutoDLQ is true, provision DLQ for this queue
 		if q.AutoDLQ {
-			if q.Exchange == "" {
-				return fmt.Errorf("exchange is a required parameter when AutoDLQ is true")
-			}
-			dlx := q.Exchange + ".dead-letter"
-			dlxq := q.Name + ".dead-letter"
-
-			// Queue for dead letters.
-			dlxQueue, err := c.Channel.QueueDeclare(dlxq, true, false, false, false, nil)
-			if err != nil {
-				return err
-			}
-
-			// Bind dead letter queue.
-			err = c.Channel.QueueBind(dlxQueue.Name, dlxq, dlx, false, nil)
-			if err != nil {
-				return err
-			}
-
-			// Queue to consume messages from (with dlx).
-			cq, err := c.Channel.QueueDeclare(q.Name, true, false, false, false, aq.Table{
-				"x-dead-letter-exchange":    dlx,
-				"x-dead-letter-routing-key": dlxQueue.Name,
-			})
-			if err != nil {
-				return err
-			}
-
-			err = c.Channel.QueueBind(cq.Name, q.Name, q.Exchange, true, nil)
+			err := c.declareQueueWithDLQ(q)
 			if err != nil {
 				return err
 			}
 		} else {
 			// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
 			// more information about the arguments.
-			cq, err := c.Channel.QueueDeclare(
-				q.Name,
-				q.Durable,    // durable
-				q.AutoDelete, // auto-delete
-				q.Exclusive,  // exclusive
-				q.NoWait,     // no-wait
-				nil,          // arguments
-			)
+			err := c.declareQueue(q)
 			if err != nil {
 				return err
 			}
-
-			// Bind to exchange if such is specified. Otherwise the queue declared above will bind to AMQP Default
-			if q.Exchange != "" {
-				err = c.Channel.QueueBind(cq.Name, q.Name, q.Exchange, true, nil)
-				if err != nil {
-					return err
-				}
-			}
 		}
+	}
+	return nil
+}
+
+// declareExchange creates a direct exchange with the name specified by the "Exchange" field as well as a dead-letter
+// exchange using the exchange name as prefix.
+func (c *RabbitMQClient) declareExchange(e *queue.RabbitMQExchange) error {
+	err := c.Channel.ExchangeDeclare(e.Name, e.Kind, e.Durable, e.AutoDelete, e.Internal, e.NoWait, nil)
+	if err != nil {
+		return err
+	}
+
+	if e.AutoDLE {
+		// Exchange for dead letters.
+		dlx := e.Name + ".dead-letter"
+		err = c.Channel.ExchangeDeclare(dlx, e.Kind, e.Durable, e.AutoDelete, e.Internal, e.NoWait, nil)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// declareQueue declares a Queue with no arguments, optionally binding the new queue to an exchange if applicable.
+func (c *RabbitMQClient) declareQueue(q queue.RabbitMQQueue) error {
+	cq, err := c.Channel.QueueDeclare(
+		q.Name,
+		q.Durable,    // durable
+		q.AutoDelete, // auto-delete
+		q.Exclusive,  // exclusive
+		q.NoWait,     // no-wait
+		nil,          // arguments
+	)
+	if err != nil {
+		return err
+	}
+
+	// Bind to exchange if such is specified. Otherwise the queue declared above will bind to AMQP Default
+	if q.Exchange != nil {
+		err = c.Channel.QueueBind(cq.Name, q.Name, q.Exchange.Name, true, nil)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// declareQueueWithDLQ creates a Queue with DLQ arguments as well as creating the DLQ and the necessary QueueBind(s).
+func (c *RabbitMQClient) declareQueueWithDLQ(q queue.RabbitMQQueue) error {
+	if q.Exchange == nil {
+		return fmt.Errorf("exchange is a required parameter when AutoDLQ is true")
+	}
+	dlx := q.Exchange.Name + ".dead-letter"
+	dlxq := q.Name + ".dead-letter"
+
+	// Queue for dead letters.
+	dlxQueue, err := c.Channel.QueueDeclare(dlxq, true, false, false, false, nil)
+	if err != nil {
+		return err
+	}
+
+	// Bind dead letter queue.
+	err = c.Channel.QueueBind(dlxQueue.Name, dlxq, dlx, false, nil)
+	if err != nil {
+		return err
+	}
+
+	// Queue to consume messages from (with dlx).
+	cq, err := c.Channel.QueueDeclare(q.Name, true, false, false, false, aq.Table{
+		"x-dead-letter-exchange":    dlx,
+		"x-dead-letter-routing-key": dlxQueue.Name,
+	})
+	if err != nil {
+		return err
+	}
+
+	err = c.Channel.QueueBind(cq.Name, q.Name, q.Exchange.Name, true, nil)
+	if err != nil {
+		return err
 	}
 	return nil
 }

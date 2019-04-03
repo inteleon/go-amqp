@@ -37,7 +37,7 @@ func (d *RabbitMQDelivery) Nack(multiple, requeue bool) error {
 // RabbitMQQueue defines a single queue that we will connect to (and declare if needed).
 type RabbitMQQueue struct {
 	Name        string
-	Exchange	string
+	Exchange    *RabbitMQExchange
 	Durable     bool
 	AutoDelete  bool
 	Exclusive   bool
@@ -45,6 +45,16 @@ type RabbitMQQueue struct {
 	SkipDeclare bool
 	ProcessFunc ProcessFunc
 	AutoDLQ     bool
+}
+
+type RabbitMQExchange struct {
+	Name       string
+	Kind       string
+	Durable    bool
+	AutoDelete bool
+	Internal   bool
+	NoWait     bool
+	AutoDLE    bool
 }
 
 type rabbitMQConsumerChannel struct {
