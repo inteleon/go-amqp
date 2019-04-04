@@ -51,8 +51,6 @@ func (c *RabbitMQClient) Connect() error {
 				return err
 			}
 		} else {
-			// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
-			// more information about the arguments.
 			err := c.declareQueue(q)
 			if err != nil {
 				return err

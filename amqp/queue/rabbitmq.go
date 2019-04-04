@@ -35,42 +35,47 @@ func (d *RabbitMQDelivery) Nack(multiple, requeue bool) error {
 }
 
 // RabbitMQQueue defines a single queue that we will connect to (and declare if needed).
-// Name			Name of queue
-// Exchange		optional pointer to a RabbitMQExchange struct. If present, the exchange is created
-// Durable      see streadway docs
-// AutoDelete   see streadway docs
-// Exclusive    see streadway docs
-// NoWait       see streadway docs
-// SkipDeclare  see streadway docs
-// ProcessFunc  Function to invoke when a message is processed
-// AutoDLQ      if true, a DLQ is automatically created. Requires Exchange to be set on the struct with DLE true
+// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
+// more information about the arguments when declaring queues.
 type RabbitMQQueue struct {
-	Name        string
-	Exchange    *RabbitMQExchange
-	Durable     bool
-	AutoDelete  bool
-	Exclusive   bool
-	NoWait      bool
+	// Name of queue
+	Name string
+	// optional pointer to a RabbitMQExchange struct. If present, the exchange is created
+	Exchange *RabbitMQExchange
+	// see streadway docs
+	Durable bool
+	// see streadway docs
+	AutoDelete bool
+	// see streadway docs
+	Exclusive bool
+	// see streadway docs
+	NoWait bool
+	// see streadway docs
 	SkipDeclare bool
+	// Function to invoke when a message is received
 	ProcessFunc ProcessFunc
-	AutoDLQ     bool
+	// if true, a DLQ is automatically created. Requires Exchange to be set on the struct with DLE true
+	AutoDLQ bool
 }
 
 // RabbitMQExchange defines an exchange
-// Name 		name of exchange
-// Kind			direct, topic etc
-// Durable		see streadway docs
-// AutoDelete 	see streadway docs
-// NoWait		see streadway docs
-// AutoDLE		if true, create a companion dead-letter exchange
+// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
+// more information about the arguments when declaring exchanges.
 type RabbitMQExchange struct {
-	Name       string
-	Kind       string
-	Durable    bool
+	// name of exchange
+	Name string
+	// direct, topic etc
+	Kind string
+	// see streadway docs
+	Durable bool
+	// see streadway docs
 	AutoDelete bool
-	Internal   bool
-	NoWait     bool
-	AutoDLE    bool
+	// see streadway docs
+	Internal bool
+	// see streadway docs
+	NoWait bool
+	// if true, create a companion dead-letter exchange
+	AutoDLE bool
 }
 
 type rabbitMQConsumerChannel struct {
