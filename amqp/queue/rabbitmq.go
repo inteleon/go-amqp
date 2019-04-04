@@ -35,14 +35,47 @@ func (d *RabbitMQDelivery) Nack(multiple, requeue bool) error {
 }
 
 // RabbitMQQueue defines a single queue that we will connect to (and declare if needed).
+// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
+// more information about the arguments when declaring queues.
 type RabbitMQQueue struct {
-	Name        string
-	Durable     bool
-	AutoDelete  bool
-	Exclusive   bool
-	NoWait      bool
+	// Name of queue
+	Name string
+	// optional pointer to a RabbitMQExchange struct. If present, the exchange is created
+	Exchange *RabbitMQExchange
+	// see streadway docs
+	Durable bool
+	// see streadway docs
+	AutoDelete bool
+	// see streadway docs
+	Exclusive bool
+	// see streadway docs
+	NoWait bool
+	// see streadway docs
 	SkipDeclare bool
+	// Function to invoke when a message is received
 	ProcessFunc ProcessFunc
+	// if true, a DLQ is automatically created. Requires Exchange to be set on the struct with DLE true
+	AutoDLQ bool
+}
+
+// RabbitMQExchange defines an exchange
+// See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
+// more information about the arguments when declaring exchanges.
+type RabbitMQExchange struct {
+	// name of exchange
+	Name string
+	// direct, topic etc
+	Kind string
+	// see streadway docs
+	Durable bool
+	// see streadway docs
+	AutoDelete bool
+	// see streadway docs
+	Internal bool
+	// see streadway docs
+	NoWait bool
+	// if true, create a companion dead-letter exchange
+	AutoDLE bool
 }
 
 type rabbitMQConsumerChannel struct {
