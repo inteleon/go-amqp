@@ -56,6 +56,8 @@ type RabbitMQQueue struct {
 	ProcessFunc ProcessFunc
 	// if true, a DLQ is automatically created. Requires Exchange to be set on the struct with DLE true
 	AutoDLQ bool
+	// If true, concurrent consumption is allowed in separate goroutines. If false, messages will be synchronously processed.
+	Concurrent bool
 }
 
 // RabbitMQExchange defines an exchange
@@ -149,14 +151,26 @@ func (r *RabbitMQConsumer) Start() error {
 
 	go func(r *RabbitMQConsumer, d <-chan aq.Delivery) {
 		for delivery := range d {
-			go r.Queue.ProcessFunc(
-				RabbitMQContext{
-					Consumer: r,
-					Delivery: &RabbitMQDelivery{
-						Delivery: delivery,
+			if r.Queue.Concurrent {
+				go r.Queue.ProcessFunc(
+					RabbitMQContext{
+						Consumer: r,
+						Delivery: &RabbitMQDelivery{
+							Delivery: delivery,
+						},
 					},
-				},
-			)
+				)
+			} else {
+				r.Queue.ProcessFunc(
+					RabbitMQContext{
+						Consumer: r,
+						Delivery: &RabbitMQDelivery{
+							Delivery: delivery,
+						},
+					},
+				)
+			}
+
 		}
 
 		r.Log.Warn("The delivery channel has been closed! Exiting...")
