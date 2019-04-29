@@ -37,6 +37,7 @@ func (r *rabbitMQClientCloseError) Close() error {
 type rabbitMQClientPublishSuccessful struct {
 	t                         *testing.T
 	ExpectedPublishRoutingKey string
+	ExpectedPublishExchange   string
 	ExpectedPublishPayload    []byte
 }
 
@@ -51,10 +52,24 @@ func (r *rabbitMQClientPublishSuccessful) Publish(routingKey string, payload []b
 
 	return
 }
+func (r *rabbitMQClientPublishSuccessful) PublishOnExchange(exchange string, payload []byte) (err error) {
+	if exchange != r.ExpectedPublishExchange {
+		r.t.Fatal("expected", r.ExpectedPublishExchange, "got", exchange)
+	}
+
+	if !reflect.DeepEqual(payload, r.ExpectedPublishPayload) {
+		r.t.Fatal("expected", string(r.ExpectedPublishPayload), "got", string(payload))
+	}
+
+	return
+}
 
 type rabbitMQClientPublishError struct{}
 
 func (r *rabbitMQClientPublishError) Publish(routingKey string, payload []byte) error {
+	return fmt.Errorf("Publish error")
+}
+func (r *rabbitMQClientPublishError) PublishOnExchange(exchange string, payload []byte) error {
 	return fmt.Errorf("Publish error")
 }
 
@@ -408,6 +423,7 @@ func TestRabbitMQClientPublishSuccess(t *testing.T) {
 
 	client.t = t
 	client.ExpectedPublishRoutingKey = "hax"
+	client.ExpectedPublishExchange = ""
 	client.ExpectedPublishPayload = []byte("haxor")
 
 	r := &amqp.RabbitMQ{

@@ -4,6 +4,7 @@ package amqp
 type AMQP interface {
 	Connect() error
 	Publish(string, []byte) error
+	PublishOnExchange(string, []byte) error
 	Consume() error
 	Ping() error
 	Close() error
@@ -15,6 +16,7 @@ type AMQPClient interface {
 	Connect() error
 	Close() error
 	Publish(string, []byte) error
+	PublishOnExchange(string, []byte) error
 	Consume() error
 }
 

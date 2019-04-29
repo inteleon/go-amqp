@@ -162,6 +162,24 @@ func (c *RabbitMQClient) Publish(routingKey string, payload []byte) error {
 	)
 }
 
+// PublishOnExchange takes care of publishing a message to a single RabbitMQ exchange.
+func (c *RabbitMQClient) PublishOnExchange(exchange string, payload []byte) error {
+	return c.Channel.Publish(
+		exchange,
+		"",
+		false, // mandatory
+		false, // immediate
+		aq.Publishing{
+			Headers:         aq.Table{},
+			ContentType:     "application/json",
+			ContentEncoding: "",
+			Body:            payload,
+			DeliveryMode:    aq.Persistent,
+			Priority:        0,
+		},
+	)
+}
+
 // Consume takes care of starting up queue consumers.
 func (c *RabbitMQClient) Consume() error {
 	for i, _ := range c.Cfg.Queues {
@@ -279,6 +297,13 @@ func (a *RabbitMQ) Publish(routingKey string, payload []byte) error {
 	}
 
 	return a.Client.Publish(routingKey, payload)
+}
+func (a *RabbitMQ) PublishOnExchange(exchange string, payload []byte) error {
+	if a.Client == nil {
+		return a.clientDoesNotExist()
+	}
+
+	return a.Client.PublishOnExchange(exchange, payload)
 }
 
 // Consume takes care of starting up queue consumers.
