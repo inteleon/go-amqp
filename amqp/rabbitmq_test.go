@@ -436,6 +436,29 @@ func TestRabbitMQClientPublishSuccess(t *testing.T) {
 	}
 }
 
+func TestRabbitMQClientPublishOnExchangeSuccess(t *testing.T) {
+	var client struct {
+		rabbitMQClientConnectSuccessful
+		rabbitMQClientCloseSuccessful
+		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
+	}
+
+	client.t = t
+	client.ExpectedPublishRoutingKey = ""
+	client.ExpectedPublishExchange = "some.exchange"
+	client.ExpectedPublishPayload = []byte("haxor")
+
+	r := &amqp.RabbitMQ{
+		Client: &client,
+	}
+
+	publish := r.PublishOnExchange("some.exchange", []byte("haxor"))
+	if publish != nil {
+		t.Fatal("expected", nil, "got", publish)
+	}
+}
+
 func TestRabbitMQClientPingFailure(t *testing.T) {
 	var client struct {
 		rabbitMQClientConnectSuccessful
