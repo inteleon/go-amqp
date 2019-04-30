@@ -263,7 +263,7 @@ func (a *RabbitMQ) Connect() (err error) {
 		a.Connecting = false
 	}(a)
 
-	a.Log.Info(fmt.Sprintf("Connecting to RabbitMQ at %s...", a.Cfg.URL))
+	a.Log.Debug(fmt.Sprintf("Connecting to RabbitMQ at %s...", a.Cfg.URL))
 
 	a.Client, err = a.Dial.Dial()
 	if err != nil {
