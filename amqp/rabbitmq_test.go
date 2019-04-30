@@ -154,7 +154,7 @@ func TestRabbitMQDialDialFailure(t *testing.T) {
 	helper.ValidateLogEntry(
 		t,
 		w.Buffer[0],
-		logging.InfoLogLevel,
+		logging.DebugLogLevel,
 		fmt.Sprintf("Connecting to RabbitMQ at %s...", cfg.URL),
 	)
 
@@ -204,7 +204,7 @@ func TestRabbitMQClientConnectFailure(t *testing.T) {
 	helper.ValidateLogEntry(
 		t,
 		w.Buffer[0],
-		logging.InfoLogLevel,
+		logging.DebugLogLevel,
 		fmt.Sprintf("Connecting to RabbitMQ at %s...", cfg.URL),
 	)
 
@@ -253,7 +253,7 @@ func TestRabbitMQClientConnectSuccess(t *testing.T) {
 	helper.ValidateLogEntry(
 		t,
 		w.Buffer[0],
-		logging.InfoLogLevel,
+		logging.DebugLogLevel,
 		fmt.Sprintf("Connecting to RabbitMQ at %s...", cfg.URL),
 	)
 }
@@ -332,7 +332,7 @@ func TestRabbitMQClientReconnectSuccess(t *testing.T) {
 	helper.ValidateLogEntry(
 		t,
 		w.Buffer[1],
-		logging.InfoLogLevel,
+		logging.DebugLogLevel,
 		fmt.Sprintf("Connecting to RabbitMQ at %s...", cfg.URL),
 	)
 }
@@ -382,7 +382,7 @@ func TestRabbitMQClientReconnectReConsumeSuccess(t *testing.T) {
 	helper.ValidateLogEntry(
 		t,
 		w.Buffer[1],
-		logging.InfoLogLevel,
+		logging.DebugLogLevel,
 		fmt.Sprintf("Connecting to RabbitMQ at %s...", cfg.URL),
 	)
 
