@@ -61,6 +61,20 @@ func (mr *MockAMQPMockRecorder) Publish(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockAMQP)(nil).Publish), arg0, arg1)
 }
 
+// PublishOnExchange mocks base method
+func (m *MockAMQP) PublishOnExchange(arg0 string, arg1 []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishOnExchange", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishOnExchange indicates an expected call of PublishOnExchange
+func (mr *MockAMQPMockRecorder) PublishOnExchange(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishOnExchange", reflect.TypeOf((*MockAMQP)(nil).PublishOnExchange), arg0, arg1)
+}
+
 // Consume mocks base method
 func (m *MockAMQP) Consume() error {
 	m.ctrl.T.Helper()
@@ -180,6 +194,20 @@ func (m *MockAMQPClient) Publish(arg0 string, arg1 []byte) error {
 func (mr *MockAMQPClientMockRecorder) Publish(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockAMQPClient)(nil).Publish), arg0, arg1)
+}
+
+// PublishOnExchange mocks base method
+func (m *MockAMQPClient) PublishOnExchange(arg0 string, arg1 []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishOnExchange", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishOnExchange indicates an expected call of PublishOnExchange
+func (mr *MockAMQPClientMockRecorder) PublishOnExchange(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishOnExchange", reflect.TypeOf((*MockAMQPClient)(nil).PublishOnExchange), arg0, arg1)
 }
 
 // Consume mocks base method

@@ -146,8 +146,17 @@ func (c *RabbitMQClient) Close() error {
 
 // Publish takes care of publishing a message to a single RabbitMQ queue.
 func (c *RabbitMQClient) Publish(routingKey string, payload []byte) error {
+	return c.publish(routingKey, "", payload)
+}
+
+// PublishOnExchange takes care of publishing a message to a single RabbitMQ exchange.
+func (c *RabbitMQClient) PublishOnExchange(exchange string, payload []byte) error {
+	return c.publish("", exchange, payload)
+}
+
+func (c *RabbitMQClient) publish(routingKey, exchange string, payload []byte) error {
 	return c.Channel.Publish(
-		"",
+		exchange,
 		routingKey,
 		false, // mandatory
 		false, // immediate
@@ -279,6 +288,13 @@ func (a *RabbitMQ) Publish(routingKey string, payload []byte) error {
 	}
 
 	return a.Client.Publish(routingKey, payload)
+}
+func (a *RabbitMQ) PublishOnExchange(exchange string, payload []byte) error {
+	if a.Client == nil {
+		return a.clientDoesNotExist()
+	}
+
+	return a.Client.PublishOnExchange(exchange, payload)
 }
 
 // Consume takes care of starting up queue consumers.
