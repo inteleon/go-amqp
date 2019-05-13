@@ -468,6 +468,30 @@ func TestRabbitMQClientPublishSuccess(t *testing.T) {
 	}
 }
 
+func TestRabbitMQClientPublishWithHeadersSuccess(t *testing.T) {
+	var client struct {
+		rabbitMQClientConnectSuccessful
+		rabbitMQClientCloseSuccessful
+		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
+	}
+
+	client.t = t
+	client.ExpectedPublishRoutingKey = "hax"
+	client.ExpectedPublishExchange = ""
+	client.ExpectedPublishPayload = []byte("haxor")
+	client.ExpectedHeaders = map[string]interface{}{"key": "value"}
+
+	r := &amqp.RabbitMQ{
+		Client: &client,
+	}
+
+	publish := r.PublishWithHeaders("hax", []byte("haxor"), map[string]interface{}{"key": "value"})
+	if publish != nil {
+		t.Fatal("expected", nil, "got", publish)
+	}
+}
+
 func TestRabbitMQClientPublishOnExchangeSuccess(t *testing.T) {
 	var client struct {
 		rabbitMQClientConnectSuccessful
@@ -486,6 +510,30 @@ func TestRabbitMQClientPublishOnExchangeSuccess(t *testing.T) {
 	}
 
 	publish := r.PublishOnExchange("some.exchange", []byte("haxor"))
+	if publish != nil {
+		t.Fatal("expected", nil, "got", publish)
+	}
+}
+
+func TestRabbitMQClientPublishOnExchangeWithHeadersSuccess(t *testing.T) {
+	var client struct {
+		rabbitMQClientConnectSuccessful
+		rabbitMQClientCloseSuccessful
+		rabbitMQClientPublishSuccessful
+		rabbitMQClientConsumeSuccessful
+	}
+
+	client.t = t
+	client.ExpectedPublishRoutingKey = ""
+	client.ExpectedPublishExchange = "some.exchange"
+	client.ExpectedPublishPayload = []byte("haxor")
+	client.ExpectedHeaders = map[string]interface{}{"key": "value"}
+
+	r := &amqp.RabbitMQ{
+		Client: &client,
+	}
+
+	publish := r.PublishOnExchangeWithHeaders("some.exchange", []byte("haxor"), map[string]interface{}{"key": "value"})
 	if publish != nil {
 		t.Fatal("expected", nil, "got", publish)
 	}
