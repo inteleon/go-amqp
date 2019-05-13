@@ -146,22 +146,32 @@ func (c *RabbitMQClient) Close() error {
 
 // Publish takes care of publishing a message to a single RabbitMQ queue.
 func (c *RabbitMQClient) Publish(routingKey string, payload []byte) error {
-	return c.publish(routingKey, "", payload)
+	return c.publish(routingKey, "", payload, aq.Table{})
+}
+
+// PublishWithHeaders takes care of publishing a message to a single RabbitMQ queue.
+func (c *RabbitMQClient) PublishWithHeaders(routingKey string, payload []byte, headers map[string]interface{}) error {
+	return c.publish(routingKey, "", payload, headers)
 }
 
 // PublishOnExchange takes care of publishing a message to a single RabbitMQ exchange.
 func (c *RabbitMQClient) PublishOnExchange(exchange string, payload []byte) error {
-	return c.publish("", exchange, payload)
+	return c.publish("", exchange, payload, aq.Table{})
 }
 
-func (c *RabbitMQClient) publish(routingKey, exchange string, payload []byte) error {
+// PublishOnExchangeWithHeaders takes care of publishing a message to a single RabbitMQ exchange.
+func (c *RabbitMQClient) PublishOnExchangeWithHeaders(exchange string, payload []byte, headers map[string]interface{}) error {
+	return c.publish("", exchange, payload, headers)
+}
+
+func (c *RabbitMQClient) publish(routingKey, exchange string, payload []byte, headers aq.Table) error {
 	return c.Channel.Publish(
 		exchange,
 		routingKey,
 		false, // mandatory
 		false, // immediate
 		aq.Publishing{
-			Headers:         aq.Table{},
+			Headers:         headers,
 			ContentType:     "application/json",
 			ContentEncoding: "",
 			Body:            payload,

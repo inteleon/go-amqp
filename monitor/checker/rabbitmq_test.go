@@ -24,6 +24,14 @@ func (c *testConn) PublishOnExchange(exchange string, payload []byte) error {
 	return nil
 }
 
+func (c *testConn) PublishWithHeaders(string, []byte, map[string]interface{}) error {
+	return nil
+}
+
+func (c *testConn) PublishOnExchangeWithHeaders(string, []byte, map[string]interface{}) error {
+	return nil
+}
+
 func (c *testConn) Consume() error {
 	return nil
 }

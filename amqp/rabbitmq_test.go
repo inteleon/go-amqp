@@ -39,6 +39,7 @@ type rabbitMQClientPublishSuccessful struct {
 	ExpectedPublishRoutingKey string
 	ExpectedPublishExchange   string
 	ExpectedPublishPayload    []byte
+	ExpectedHeaders           map[string]interface{}
 }
 
 func (r *rabbitMQClientPublishSuccessful) Publish(routingKey string, payload []byte) (err error) {
@@ -63,6 +64,31 @@ func (r *rabbitMQClientPublishSuccessful) PublishOnExchange(exchange string, pay
 
 	return
 }
+func (r *rabbitMQClientPublishSuccessful) PublishWithHeaders(routingKey string, payload []byte, headers map[string]interface{}) (err error) {
+	if routingKey != r.ExpectedPublishRoutingKey {
+		r.t.Fatal("expected", r.ExpectedPublishRoutingKey, "got", routingKey)
+	}
+
+	if !reflect.DeepEqual(payload, r.ExpectedPublishPayload) {
+		r.t.Fatal("expected", string(r.ExpectedPublishPayload), "got", string(payload))
+	}
+
+	return
+}
+func (r *rabbitMQClientPublishSuccessful) PublishOnExchangeWithHeaders(exchange string, payload []byte, headers map[string]interface{}) (err error) {
+	if exchange != r.ExpectedPublishExchange {
+		r.t.Fatal("expected", r.ExpectedPublishExchange, "got", exchange)
+	}
+
+	if !reflect.DeepEqual(payload, r.ExpectedPublishPayload) {
+		r.t.Fatal("expected", string(r.ExpectedPublishPayload), "got", string(payload))
+	}
+	if fmt.Sprintf("%+v", headers) != fmt.Sprintf("%+v", r.ExpectedHeaders) {
+		r.t.Fatal("expected headers", fmt.Sprintf("%+v", r.ExpectedHeaders), "got", fmt.Sprintf("%+v", headers))
+	}
+
+	return
+}
 
 type rabbitMQClientPublishError struct{}
 
@@ -70,6 +96,12 @@ func (r *rabbitMQClientPublishError) Publish(routingKey string, payload []byte) 
 	return fmt.Errorf("Publish error")
 }
 func (r *rabbitMQClientPublishError) PublishOnExchange(exchange string, payload []byte) error {
+	return fmt.Errorf("Publish error")
+}
+func (r *rabbitMQClientPublishError) PublishWithHeaders(string, []byte, map[string]interface{}) error {
+	return fmt.Errorf("Publish error")
+}
+func (r *rabbitMQClientPublishError) PublishOnExchangeWithHeaders(string, []byte, map[string]interface{}) error {
 	return fmt.Errorf("Publish error")
 }
 
