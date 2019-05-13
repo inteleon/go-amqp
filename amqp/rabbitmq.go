@@ -291,7 +291,7 @@ func (a *RabbitMQ) Connect() (err error) {
 	return
 }
 
-// Publish takes care of dispatching messages to RabbitMQ.
+// Publish takes care of dispatching messages to RabbitMQ using a routing key.
 func (a *RabbitMQ) Publish(routingKey string, payload []byte) error {
 	if a.Client == nil {
 		return a.clientDoesNotExist()
@@ -299,12 +299,32 @@ func (a *RabbitMQ) Publish(routingKey string, payload []byte) error {
 
 	return a.Client.Publish(routingKey, payload)
 }
+
+// PublishOnExchange takes care of dispatching messages to a named exchange on RabbitMQ.
 func (a *RabbitMQ) PublishOnExchange(exchange string, payload []byte) error {
 	if a.Client == nil {
 		return a.clientDoesNotExist()
 	}
 
 	return a.Client.PublishOnExchange(exchange, payload)
+}
+
+// PublishWithHeaders takes care of dispatching messages to RabbitMQ using a routing key with custom headers.
+func (a *RabbitMQ) PublishWithHeaders(routingKey string, payload []byte, headers map[string]interface{}) error {
+	if a.Client == nil {
+		return a.clientDoesNotExist()
+	}
+
+	return a.Client.PublishWithHeaders(routingKey, payload, headers)
+}
+
+// PublishOnExchangeWithHeaders takes care of dispatching messages to a named exchange on RabbitMQ with custom headers.
+func (a *RabbitMQ) PublishOnExchangeWithHeaders(exchange string, payload []byte, headers map[string]interface{}) error {
+	if a.Client == nil {
+		return a.clientDoesNotExist()
+	}
+
+	return a.Client.PublishOnExchangeWithHeaders(exchange, payload, headers)
 }
 
 // Consume takes care of starting up queue consumers.

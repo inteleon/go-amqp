@@ -5,8 +5,8 @@
 package mock_amqp
 
 import (
-	x "github.com/inteleon/go-amqp/amqp"
 	gomock "github.com/golang/mock/gomock"
+	x "github.com/inteleon/go-amqp/amqp"
 	reflect "reflect"
 )
 
