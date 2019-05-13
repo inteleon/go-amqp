@@ -89,3 +89,23 @@ func TestFullFlow(t *testing.T) {
 		"The delivery channel has been closed! Exiting...",
 	)
 }
+
+func TestHeaders(t *testing.T) {
+	expectedVal := "some-value"
+	delivery := queue.RabbitMQDelivery{
+		Delivery: aq.Delivery{
+			Body: []byte("1337"),
+		},
+	}
+	err := delivery.SetHeader("some-key", expectedVal)
+	if err != nil {
+		t.Fatalf("unexpected error setting header")
+	}
+	val, err := delivery.GetHeader("some-key")
+	if err != nil {
+		t.Fatalf("unexpected error getting header")
+	}
+	if val != expectedVal {
+		t.Fatalf("expected %v getting header, got %v", expectedVal, val)
+	}
+}

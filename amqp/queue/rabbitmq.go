@@ -34,6 +34,25 @@ func (d *RabbitMQDelivery) Nack(multiple, requeue bool) error {
 	return d.Delivery.Nack(multiple, requeue)
 }
 
+func (d *RabbitMQDelivery) SetHeader(key, value string) error {
+	if key == "" {
+		return fmt.Errorf("setting header with empty key is not allowed")
+	}
+	if d.Delivery.Headers == nil {
+		d.Delivery.Headers = make(map[string]interface{})
+	}
+	d.Delivery.Headers[key] = value
+	return nil
+}
+
+func (d *RabbitMQDelivery) GetHeader(key string) (string, error) {
+	header := d.Delivery.Headers[key]
+	if value, ok := header.(string); ok {
+		return value, nil
+	}
+	return "", fmt.Errorf("header %v is not present on Delivery", key)
+}
+
 // RabbitMQQueue defines a single queue that we will connect to (and declare if needed).
 // See https://www.rabbitmq.com/amqp-0-9-1-reference.html for
 // more information about the arguments when declaring queues.
