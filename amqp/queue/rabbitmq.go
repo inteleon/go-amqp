@@ -95,6 +95,8 @@ type RabbitMQExchange struct {
 	Internal bool
 	// see streadway docs
 	NoWait bool
+	// to avoid redeclaring an already existing exchange, set this to true.
+	SkipDeclare bool
 	// if true, create a companion dead-letter exchange
 	AutoDLE bool
 }
