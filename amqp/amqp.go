@@ -5,6 +5,8 @@ type AMQP interface {
 	Connect() error
 	Publish(string, []byte) error
 	PublishOnExchange(string, []byte) error
+	PublishWithHeaders(string, []byte, map[string]interface{}) error
+	PublishOnExchangeWithHeaders(string, []byte, map[string]interface{}) error
 	Consume() error
 	Ping() error
 	Close() error
@@ -17,6 +19,8 @@ type AMQPClient interface {
 	Close() error
 	Publish(string, []byte) error
 	PublishOnExchange(string, []byte) error
+	PublishWithHeaders(string, []byte, map[string]interface{}) error
+	PublishOnExchangeWithHeaders(string, []byte, map[string]interface{}) error
 	Consume() error
 }
 

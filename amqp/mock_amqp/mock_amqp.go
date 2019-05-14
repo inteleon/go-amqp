@@ -75,6 +75,34 @@ func (mr *MockAMQPMockRecorder) PublishOnExchange(arg0, arg1 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishOnExchange", reflect.TypeOf((*MockAMQP)(nil).PublishOnExchange), arg0, arg1)
 }
 
+// PublishWithHeaders mocks base method
+func (m *MockAMQP) PublishWithHeaders(arg0 string, arg1 []byte, arg2 map[string]interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishWithHeaders", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishWithHeaders indicates an expected call of PublishWithHeaders
+func (mr *MockAMQPMockRecorder) PublishWithHeaders(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWithHeaders", reflect.TypeOf((*MockAMQP)(nil).PublishWithHeaders), arg0, arg1, arg2)
+}
+
+// PublishOnExchangeWithHeaders mocks base method
+func (m *MockAMQP) PublishOnExchangeWithHeaders(arg0 string, arg1 []byte, arg2 map[string]interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishOnExchangeWithHeaders", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishOnExchangeWithHeaders indicates an expected call of PublishOnExchangeWithHeaders
+func (mr *MockAMQPMockRecorder) PublishOnExchangeWithHeaders(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishOnExchangeWithHeaders", reflect.TypeOf((*MockAMQP)(nil).PublishOnExchangeWithHeaders), arg0, arg1, arg2)
+}
+
 // Consume mocks base method
 func (m *MockAMQP) Consume() error {
 	m.ctrl.T.Helper()
@@ -208,6 +236,34 @@ func (m *MockAMQPClient) PublishOnExchange(arg0 string, arg1 []byte) error {
 func (mr *MockAMQPClientMockRecorder) PublishOnExchange(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishOnExchange", reflect.TypeOf((*MockAMQPClient)(nil).PublishOnExchange), arg0, arg1)
+}
+
+// PublishWithHeaders mocks base method
+func (m *MockAMQPClient) PublishWithHeaders(arg0 string, arg1 []byte, arg2 map[string]interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishWithHeaders", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishWithHeaders indicates an expected call of PublishWithHeaders
+func (mr *MockAMQPClientMockRecorder) PublishWithHeaders(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishWithHeaders", reflect.TypeOf((*MockAMQPClient)(nil).PublishWithHeaders), arg0, arg1, arg2)
+}
+
+// PublishOnExchangeWithHeaders mocks base method
+func (m *MockAMQPClient) PublishOnExchangeWithHeaders(arg0 string, arg1 []byte, arg2 map[string]interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublishOnExchangeWithHeaders", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishOnExchangeWithHeaders indicates an expected call of PublishOnExchangeWithHeaders
+func (mr *MockAMQPClientMockRecorder) PublishOnExchangeWithHeaders(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishOnExchangeWithHeaders", reflect.TypeOf((*MockAMQPClient)(nil).PublishOnExchangeWithHeaders), arg0, arg1, arg2)
 }
 
 // Consume mocks base method

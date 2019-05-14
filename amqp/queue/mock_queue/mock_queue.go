@@ -76,6 +76,35 @@ func (mr *MockAMQPDeliveryMockRecorder) Nack(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Nack", reflect.TypeOf((*MockAMQPDelivery)(nil).Nack), arg0, arg1)
 }
 
+// SetHeader mocks base method
+func (m *MockAMQPDelivery) SetHeader(key string, value interface{}) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetHeader", key, value)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetHeader indicates an expected call of SetHeader
+func (mr *MockAMQPDeliveryMockRecorder) SetHeader(key, value interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockAMQPDelivery)(nil).SetHeader), key, value)
+}
+
+// GetHeader mocks base method
+func (m *MockAMQPDelivery) GetHeader(key string) (interface{}, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetHeader", key)
+	ret0, _ := ret[0].(interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetHeader indicates an expected call of GetHeader
+func (mr *MockAMQPDeliveryMockRecorder) GetHeader(key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHeader", reflect.TypeOf((*MockAMQPDelivery)(nil).GetHeader), key)
+}
+
 // MockAMQPConsumer is a mock of AMQPConsumer interface
 type MockAMQPConsumer struct {
 	ctrl     *gomock.Controller
