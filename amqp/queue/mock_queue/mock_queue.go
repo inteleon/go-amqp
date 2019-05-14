@@ -77,7 +77,7 @@ func (mr *MockAMQPDeliveryMockRecorder) Nack(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // SetHeader mocks base method
-func (m *MockAMQPDelivery) SetHeader(key, value string) error {
+func (m *MockAMQPDelivery) SetHeader(key string, value interface{}) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SetHeader", key, value)
 	ret0, _ := ret[0].(error)
@@ -91,11 +91,12 @@ func (mr *MockAMQPDeliveryMockRecorder) SetHeader(key, value interface{}) *gomoc
 }
 
 // GetHeader mocks base method
-func (m *MockAMQPDelivery) GetHeader(key string) string {
+func (m *MockAMQPDelivery) GetHeader(key string) (interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetHeader", key)
-	ret0, _ := ret[0].(string)
-	return ret0
+	ret0, _ := ret[0].(interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetHeader indicates an expected call of GetHeader

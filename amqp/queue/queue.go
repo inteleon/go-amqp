@@ -8,8 +8,8 @@ type AMQPDelivery interface {
 	Payload() ([]byte, error)
 	Ack(bool) error
 	Nack(bool, bool) error
-	SetHeader(key, value string) error
-	GetHeader(key string) (string, error)
+	SetHeader(key string, value interface{}) error
+	GetHeader(key string) (interface{}, error)
 }
 
 type AMQPConsumer interface {
