@@ -26,18 +26,19 @@ type RabbitMQClient struct {
 // Connect takes care of "on connect" specific tasks. Queue(s) and Exchange(s) may be created on the fly given the queues
 // specified in the slice of RabbitMQQueue.
 //
-// q.Exchange - if not nil, an exchange will be created. If AutoDLE is true, a corresponding dead-letter exchange is created as well.
-// q.AutoDLQ - if true, a DLQ with bindings will be created for the queue specified in q.Name.
+// q.Exchange - if not nil and SkipDeclare is false, an exchange will be created. If AutoDLE is true, a corresponding
+// dead-letter exchange is created as well.
+// q.AutoDLQ - if true, a DLQ with bindings will be created for the queue specified in q.Name. If AutoDLQ is true, a
+// corresponding dead-letter queue is created as well.
 func (c *RabbitMQClient) Connect() error {
 	for _, q := range c.Cfg.Queues {
 		if q.SkipDeclare {
 			c.Log.Info(fmt.Sprintf("Skipping declaration of queue: %s", q.Name))
-
 			continue
 		}
 
-		// Declare exchange and DLE if an exchange is specified
-		if q.Exchange != nil {
+		// Declare exchange and DLE if an exchange is specified and SkipDeclare is false
+		if q.Exchange != nil && !q.Exchange.SkipDeclare {
 			err := c.declareExchange(q.Exchange)
 			if err != nil {
 				return err
